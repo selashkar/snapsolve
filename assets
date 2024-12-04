@@ -1,5 +1,0 @@
-puzzle-game/
-├── assets/
-│   └── puzzle_image.jpg
-├── puzzle_game.py
-└── requirements.txt
