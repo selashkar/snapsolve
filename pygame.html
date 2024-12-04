@@ -1,0 +1,81 @@
+import pygame
+import random
+
+# Initialize pygame
+pygame.init()
+
+# Screen dimensions
+WIDTH, HEIGHT = 600, 600
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Puzzle Game")
+
+# Colors
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+
+# Load an image and split it into a 3x3 grid
+image = pygame.image.load("puzzle_image.jpg")  # Replace with your image file
+image = pygame.transform.scale(image, (WIDTH, HEIGHT))
+TILE_SIZE = WIDTH // 3
+
+# Create grid of pieces
+pieces = []
+for row in range(3):
+    for col in range(3):
+        x, y = col * TILE_SIZE, row * TILE_SIZE
+        piece = image.subsurface((x, y, TILE_SIZE, TILE_SIZE))
+        pieces.append(((row, col), piece))
+
+# Shuffle pieces
+random.shuffle(pieces)
+
+# Game variables
+selected_piece = None
+empty_slot = (2, 2)  # Bottom-right corner is empty
+running = True
+
+# Game loop
+while running:
+    screen.fill(WHITE)
+
+    # Draw the pieces
+    for i, ((row, col), piece) in enumerate(pieces):
+        if (row, col) != empty_slot:
+            x, y = col * TILE_SIZE, row * TILE_SIZE
+            screen.blit(piece, (x, y))
+
+    # Event handling
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+            clicked_col = mouse_x // TILE_SIZE
+            clicked_row = mouse_y // TILE_SIZE
+            clicked_pos = (clicked_row, clicked_col)
+
+            # Check if the clicked position is adjacent to the empty slot
+            if abs(clicked_row - empty_slot[0]) + abs(clicked_col - empty_slot[1]) == 1:
+                # Swap the clicked piece with the empty slot
+                for i, ((row, col), piece) in enumerate(pieces):
+                    if (row, col) == clicked_pos:
+                        pieces[i] = (empty_slot, piece)
+                        empty_slot = clicked_pos
+                        break
+
+    # Check if the puzzle is solved
+    solved = all((row, col) == piece_pos for piece_pos, ((row, col), _) in enumerate(pieces))
+    if solved:
+        font = pygame.font.Font(None, 74)
+        text = font.render("You Win!", True, BLACK)
+        screen.blit(text, (WIDTH // 4, HEIGHT // 2))
+        pygame.display.flip()
+        pygame.time.wait(2000)
+        running = False
+
+    # Update the screen
+    pygame.display.flip()
+
+# Quit pygame
+pygame.quit()
